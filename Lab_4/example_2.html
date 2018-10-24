@@ -94,7 +94,6 @@
     d3.select("#vertical-button")
         .on("click", function() {
             svg.selectAll("rect")
-                .data(dataset)
                 .transition()
                 .duration(1000)
                 .ease(d3.easeLinear)
