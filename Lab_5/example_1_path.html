@@ -16,7 +16,7 @@
 
 <body>
     <svg width='500' height='300'>
-            <path d="M 10 25 L 10 75 L 60 75 L 20 25"></path>
+        <path d="M 10 25 L 10 75 L 60 75 L 10 25"></path>
     </svg>
 </body>
 
@@ -30,11 +30,11 @@
     // Array of points x,y
     var points = [
         [0, 80],
-        [100, 100],
-        [200, 30],
-        [300, 50],
-        [400, 40],
-        [500, 80]
+        [40, 100],
+        [80, 70],
+        [100, 30],
+        [250, 150],
+        [300, 120]
     ];
 
     // Convert data points into path
@@ -45,6 +45,9 @@
     // Add a new path element and set the path data as attribute
     d3.select('svg').append("path")
         .attr('d', pathData);
+
+
+
 </script>
 
 </html>

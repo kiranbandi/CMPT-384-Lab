@@ -20,6 +20,7 @@
             .translate([w / 2, h / 2])
             .scale([50000]);
 
+
         //Define path generator
         var path = d3.geoPath()
             .projection(projection);
@@ -31,9 +32,9 @@
             .attr("height", h);
 
         //Load in GeoJSON data
-        d3.json("saskatoon.json").then(function(json) {
+        d3.csv("datalist.csv").then(function(data) {
 
-            //Bind data and create one path per GeoJSON feature
+            // Bind data and create one path per GeoJSON feature
             svg.selectAll("path")
                 .data(json.features)
                 .enter()
