@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+
+
+    <head>
+        <meta charset="utf-8">
+        <title>Example 1 - Saskatoon Map</title>
+        <script type="text/javascript" src="d3.v5.min.js"></script>
+    </head>
+
+    <body>
+    </body>
+    <style>
+        path {
+    stroke: lightgrey;
+}
+    </style>
+    <script type="text/javascript">										//V3 = Implemented zoom-in/out functionality
+        //Width and height
+        var w = 800;
+        var h = 500;
+        
+        //Define map projection
+        var projection = d3.geoMercator()
+            .center([-114.07, 51.0486])
+            .translate([w / 2, h / 2])
+            .scale([50000]);
+        //Define path generator
+        var path = d3.geoPath()
+            .projection(projection);
+        //Create SVG element
+        var svg = d3.select("body")
+            .append("svg")
+            .attr("width", w)
+            .attr("height", h)
+			.style('border', '2px solid black')							//to see where the border is  zooming
+			.call(d3.zoom().on("zoom", function () {					//Function call
+				svg.attr("transform", d3.event.transform)
+			}))
+			.append("g");
+        //Load in GeoJSON data
+        d3.json("calgary.json").then(function(json) {
+           // Bind data and create one path per GeoJSON feature
+            svg.selectAll("path")
+                .data(json.features)
+                .enter()
+                .append("path")
+                .attr("d", path)
+                .attr('fill', 'white')
+                .append('title')
+                .text(function(d) {
+                    return d.properties.name;
+                })
+                var color;
+        var maxvalue;
+        var minvalue;
+		var dictionary = {};
+        var location1= [];
+        var KeysA;
+       
+		var dataset;
+		/*END: READ ONLY*/
+		  
+		//Load in the data
+        d3.csv("tomslee.csv").then(function (data){		
+				dataset = data; 
+                					
+				contributionDictionary(); 
+                console.log(dataset)
+                maxvalue=Math.max.apply(null, Object.values(dictionary));
+                minvalue=Math.min.apply(null, Object.values(dictionary));
+                console.log(maxvalue)
+                console.log(minvalue)
+                console.log(location1);
+                 color = d3.scaleQuantize()
+                 //.range(["light blue","blue","pink","red"]);
+                .range(["grey","pink","red"]);
+                color.domain([minvalue,maxvalue])
+                // d3.csv("Country_List.csv").then(function (data1){		
+				// dataset = data1; 
+                
+				generateVisualization(); 
+               
+			});	
+			//});	
+            function contributionDictionary(){
+                dataset.forEach(function(d){
+                    d.price=+d.price;
+                    d.bedrooms=+d.bedrooms;
+                    d.latitude=+d.latitude;
+                    d.longitude=+d.longitude;
+				
+				
+				
+				if(d.borough in dictionary){
+                    if(d.bedrooms==0||d.bedrooms==1){
+                        dictionary[String(d.borough)].push(d.price);
+                    }
+                    else{
+                        
+                        dictionary[String(d.borough)].push(d.price/d.bedrooms);
+                    }
+					
+				}
+				else{
+                    //location1[String(d.borough)]=[d.latitude,d.longitude];
+                    location1.push({latitude:d.latitude,longitude:d.longitude,borough:d.borough})
+					dictionary[String(d.borough)]=[];
+                    if(d.bedrooms==0||d.bedrooms==1){
+                        dictionary[String(d.borough)].push(d.price);
+                    }
+                    else{
+                        dictionary[String(d.borough)].push(d.price/d.bedrooms);
+                    }
+				}
+				
+			});
+            console.log(location1);
+            var i;
+            var keys1=Object.keys(dictionary);
+            for (i in keys1){
+                dictionary[keys1[i]]=d3.mean(dictionary[keys1[i]]);
+                //console.log(dictionary[keys1[i]])
+            }
+        };
+        
+        
+        
+		// d3.csv("Country_List.csv").then(function (data){		
+		// 		dataset = data; 
+                
+		// 		generateVisualization(); 
+               
+		// 	});		
+		
+		function generateVisualization(){
+		
+            
+			
+			//Create SVG element
+			//var svg = d3.select("body").append("svg").attr("width", w).attr("height", h);
+			KeysA=Object.keys(dictionary)
+			console.log(KeysA)
+			//Draw circles 
+			svg.selectAll("circle").data(location1).enter().append("circle")
+				.attr("cx",function(d,i){
+					
+					//return d.Longitude;
+                    // console.log(projection([d.longitude, d.latitude]))
+                    return projection([d.longitude, d.latitude])[0];
+                    //return long(d.longitude);
+					}
+					)
+				.attr("cy",function(d,i){
+					return projection([d.longitude, d.latitude])[1];
+                    //return lat(d.latitude);
+					}
+					)
+				.attr("r",4)
+				
+				.attr("fill",function(d,i){
+                    //console.log(d.borough);
+                    //if(d.borough in KeysA){
+                        //keysA.remove(d.borough)
+                        
+                        return color(dictionary[d.borough]);
+                    // }
+                    // else{
+                    //     return "white";
+                    // }
+        
+                    
+                })
+                .on("mouseover",handleMouseOver)
+                .on("mouseout",handleMouseOut)
+            /////////////TEST////
+            function handleMouseOver(d, i) {  // Add interactivity
+
+            // Use D3 to select element, change color and size
+            d3.select(this).attr({
+              
+            });
+            // Specify where to put label of text
+            svg.append("text").attr({
+               id: "t" + d.longitude + "-" + d.latitude + "-" + i,  // Create an id for text so we can select it later for removing on mouseout
+                x: function() { return projection([d.longitude, d.latitude])[0]-30; },
+                y: function() { return projection([d.longitude, d.latitude])[1]-30; }
+            })
+            .text(function (){
+              return [d.longitude, d.latitude];  // Value of the text
+            });
+          }
+
+          function handleMouseOut(d, i) {
+            // Use D3 to select element, change color back to normal
+            d3.select(this).attr({
+              
+            });
+            // Select text by id and then remove
+            d3.select("#t" + d.latitude + "-" + d.longitude + "-" + i).remove();  // Remove text location
+          }
+             console.log(location1)
+             svg.selectAll("text").data(location1).enter().append("text")
+				.attr("x",function(d,i){
+					return projection([d.longitude, d.latitude])[0];
+					})
+				.attr("y",function(d,i){
+					return projection([d.longitude, d.latitude])[1];
+					})
+				.attr("font-size","15px")
+				.text(function(d,i){
+                    if(color(dictionary[d.borough])=="grey"||color(dictionary[d.borough])=="red"||color(dictionary[d.borough])=="pink"){
+						return d.borough
+					}
+					// else{
+					// 	return;
+					// }
+					
+				})
+            
+				
+		};
+        });
+    </script>
+
+</html>
